@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+
+  spark-master:
+    image: jarzamendia/spark-master:2.3.3
+    ports:
+      - "8080:8080"
+    networks:
+      spark-network:
+    volumes:
+       - ./data/spark-apps:/opt/spark-apps
+       - ./data/spark-data:/opt/spark-data
+    environment:
+      - "SPARK_LOCAL_IP=0.0.0.0"
+
+  spark-worker:
+    image: jarzamendia/spark-worker:2.3.3
+    ports:
+      - "8081:8081"
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_LOCAL_IP=0.0.0.0
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_DRIVER_MEMORY=128m
+      - SPARK_EXECUTOR_MEMORY=256m
+    networks: 
+      spark-network:
+    volumes:
+       - ./data/spark-apps:/opt/spark-apps
+       - ./data/spark-data:/opt/spark-data
+ 
+  spark-juniper:
+    image: continuumio/anaconda
+    ports:
+      - "8888:8888"
+    command:
+      /bin/bash -c "/opt/conda/bin/conda install jupyter -y --quiet && mkdir /opt/notebooks && /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser"
+    networks: 
+      spark-network:
+    volumes:
+       - ./data/spark-apps:/opt/spark-apps
+       - ./data/spark-data:/opt/spark-data
+
+networks:
+  spark-network:
+    driver: overlay
