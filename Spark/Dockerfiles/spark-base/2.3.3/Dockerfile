@@ -2,9 +2,6 @@ FROM java:8-jdk-alpine
 
 LABEL maintainer="jearzamendia@gmail.com"
 
-ENV http_proxy="http://proxy.sgi.ms.gov.br:8081"
-ENV https_proxy="http://proxy.sgi.ms.gov.br:8081"
-
 ENV DAEMON_RUN=true
 ENV SPARK_VERSION=2.3.3
 ENV HADOOP_VERSION=2.7
