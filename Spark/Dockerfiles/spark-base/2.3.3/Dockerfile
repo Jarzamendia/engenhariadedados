@@ -2,14 +2,17 @@ FROM java:8-jdk-alpine
 
 LABEL maintainer="jearzamendia@gmail.com"
 
+ENV http_proxy="http://proxy.sgi.ms.gov.br:8081"
+ENV https_proxy="http://proxy.sgi.ms.gov.br:8081"
+
 ENV DAEMON_RUN=true
 ENV SPARK_VERSION=2.3.3
 ENV HADOOP_VERSION=2.7
 ENV SCALA_VERSION=2.12.4
 ENV SCALA_HOME=/usr/share/scala
 
-RUN apk add --no-cache --virtual=.build-dependencies wget ca-certificates && \
-    apk add --no-cache bash curl jq && \
+RUN apk add --no-cache --virtual=.build-dependencies wget  && \
+    apk add --no-cache bash curl jq ca-certificates wget tar && \
     cd "/tmp" && \
     wget --no-verbose "https://downloads.typesafe.com/scala/${SCALA_VERSION}/scala-${SCALA_VERSION}.tgz" && \
     tar xzf "scala-${SCALA_VERSION}.tgz" && \
@@ -21,7 +24,7 @@ RUN apk add --no-cache --virtual=.build-dependencies wget ca-certificates && \
     rm -rf "/tmp/"*
     
 #Scala instalation
-RUN export PATH="/usr/local/sbt/bin:$PATH" &&  apk update && apk add ca-certificates wget tar && mkdir -p "/usr/local/sbt" && wget -qO - --no-check-certificate "https://cocl.us/sbt-0.13.16.tgz" | tar xz -C /usr/local/sbt --strip-components=1 && sbt sbtVersion
+RUN export PATH="/usr/local/sbt/bin:$PATH" &&  apk update && mkdir -p "/usr/local/sbt" && wget -qO - --no-check-certificate "https://cocl.us/sbt-0.13.16.tgz" | tar xz -C /usr/local/sbt --strip-components=1 && sbt sbtVersion
 
 RUN apk add --no-cache python3
 

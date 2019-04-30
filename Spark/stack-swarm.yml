@@ -13,7 +13,10 @@ services:
        - ./data/spark-apps:/opt/spark-apps
        - ./data/spark-data:/opt/spark-data
     environment:
-      - "SPARK_LOCAL_IP=0.0.0.0"
+      - SPARK_LOCAL_IP=0.0.0.0
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON_OPTS=""
 
   spark-worker:
     image: jarzamendia/spark-worker:2.3.3
@@ -26,6 +29,9 @@ services:
       - SPARK_WORKER_MEMORY=1G
       - SPARK_DRIVER_MEMORY=128m
       - SPARK_EXECUTOR_MEMORY=256m
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON_OPTS=""
     networks: 
       spark-network:
     volumes:
@@ -33,15 +39,17 @@ services:
        - ./data/spark-data:/opt/spark-data
  
   spark-juniper:
-    image: continuumio/anaconda
+    image: anaconda
     ports:
       - "8888:8888"
-    command:
-      /bin/bash -c "/opt/conda/bin/conda install jupyter -y --quiet && mkdir /opt/notebooks && /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser"
+    environment:
+      - PYSPARK_PYTHON=python
+      - PYSPARK_DRIVER_PYTHON=python
+      - PYSPARK_DRIVER_PYTHON_OPTS=""
     networks: 
       spark-network:
     volumes:
-       - ./data/spark-apps:/opt/spark-apps
+       - ./data/spark-apps:/opt/notebooks 
        - ./data/spark-data:/opt/spark-data
 
 networks:

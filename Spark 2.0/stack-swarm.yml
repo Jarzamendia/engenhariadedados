@@ -1,0 +1,74 @@
+version: "3.7"
+
+services:
+
+  spark-master:
+    image: jarzamendia/alpine-scala2.12.8-spark-master-ed:3.9
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      spark-network:
+    #volumes:
+    #   - ./data/spark-apps:/opt/spark-apps
+    #   - ./data/spark-data:/opt/spark-data
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+
+  spark-worker:
+    image: jarzamendia/alpine-scala2.12.8-spark-worker-ed:3.9
+    ports:
+      - "8081:8081"
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      #- SPARK_LOCAL_IP=0.0.0.0
+      #- SPARK_WORKER_CORES=1
+      #- SPARK_WORKER_MEMORY=1G
+      #- SPARK_DRIVER_MEMORY=128m
+      #- SPARK_EXECUTOR_MEMORY=256m
+    deploy:
+      mode: replicated
+      replicas: 2
+
+    networks: 
+      spark-network:
+    #volumes:
+    #   - ./data/spark-apps:/opt/spark-apps
+    #   - ./data/spark-data:/opt/spark-data
+
+  scala-sbt:
+    image: bde2020/spark-scala-template
+    command: "ping 127.0.0.1"
+    environment:
+      - SPARK_MASTER_NAME=spark://spark-master
+      - SPARK_MASTER_PORT=7077
+      - http_proxy=http://proxy.sgi.ms.gov.br:8081
+      - https_proxy=http://proxy.sgi.ms.gov.br:8081
+      - no_proxy=127.0.0.1,localhost,spark-master
+      #- SPARK_APPLICATION_MAIN_CLASS
+      #- SPARK_APPLICATION_ARGS=
+
+    deploy:
+      mode: replicated
+      replicas: 1
+
+    networks: 
+      spark-network:
+    #volumes:
+    #   - ./data/spark-apps:/opt/spark-apps
+    #   - ./data/spark-data:/opt/spark-data
+
+  spark-juniper:
+    image: anaconda
+    ports:
+      - "8888:8888"
+    environment:
+      - PYSPARK_PYTHON=python
+      - PYSPARK_DRIVER_PYTHON=python
+      - PYSPARK_DRIVER_PYTHON_OPTS=""
+    networks: 
+      spark-network:
+
+networks:
+  spark-network:
+    driver: overlay
