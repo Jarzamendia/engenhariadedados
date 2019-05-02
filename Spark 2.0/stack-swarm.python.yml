@@ -1,0 +1,45 @@
+version: "3.7"
+
+services:
+
+  spark-master:
+    image: jarzamendia/alpine-python3-spark2.4.0-2.7-spark-master-ed:3.9
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      spark-network:
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+
+  spark-worker:
+    image: jarzamendia/alpine-python3-spark2.4.0-2.7-spark-worker-ed:3.9
+    ports:
+      - "8081:8081"
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      #- SPARK_LOCAL_IP=0.0.0.0
+      #- SPARK_WORKER_CORES=1
+      #- SPARK_WORKER_MEMORY=1G
+      #- SPARK_DRIVER_MEMORY=128m
+      #- SPARK_EXECUTOR_MEMORY=256m
+    deploy:
+      mode: replicated
+      replicas: 2
+
+    networks: 
+      spark-network:
+
+  spark-juniper:
+    image: jarzamendia/alpine-jupyter-ed:v2-alpine3.9
+    ports:
+      - "8888:8888"
+    environment:
+      - PYSPARK_DRIVER_PYTHON = jupyter
+      - PYSPARK_DRIVER_PYTHON_OPTS = notebook
+    networks: 
+      spark-network:
+
+networks:
+  spark-network:
+    driver: overlay
